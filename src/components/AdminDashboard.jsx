@@ -551,7 +551,6 @@ function DetailModal({ record, onClose, onEdit, onPrint }) {
 export default function AdminDashboard({ session, onLogout, onBack }) {
   const [tab, setTab]         = useState('stats')
   const [records, setRecords] = useState([])
-  const [users, setUsers]     = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState('')
   const [detail, setDetail]   = useState(null)
@@ -565,11 +564,6 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo]     = useState('')
   const [page, setPage]         = useState(1)
-
-  const emptyUser = { nombre: '', email: '', municipio: '', cargo: '' }
-  const [newUser, setNewUser]       = useState(emptyUser)
-  const [savingUser, setSavingUser] = useState(false)
-  const [userMsg, setUserMsg]       = useState(null)
 
   useEffect(() => { loadData() }, [])
 
@@ -596,19 +590,12 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
           servicios:{ aguaPotable:'B', drenaje:'R', alcantarillado:'R', electrificacion:'B', guarniciones:'B', banquetas:'M', pavimento:'R', recoleccionBasura:'B' },
           equipamiento:{ educacionCultura:'1', transportePublico:'0', comercioAbasto:'1', recreacionDeporte:'1', saludAsistencia:'0', telefono:'1', correosYTelegrafo:'1', contaminacion:'0', calleEspecial:'0' }, infra_mapa:[] },
       ])
-      setUsers([
-        { id:1, nombre:'Carlos Gómez', email:'carlos@catastro.gob.mx', municipio:'Centro', cargo:'Capturista', activo:true },
-        { id:2, nombre:'María López',  email:'maria@catastro.gob.mx',  municipio:'Norte',  cargo:'Capturista', activo:true },
-      ])
       setLoading(false); return
     }
-    const [{ data: recs, error: rErr }, { data: usrs, error: uErr }] = await Promise.all([
-      supabase.from('registros').select('*').order('created_at', { ascending: false }),
-      supabase.from('usuarios').select('*').order('created_at', { ascending: false }),
-    ])
-    if (rErr || uErr) { setError(`Error: ${(rErr||uErr).message}`); setLoading(false); return }
+    const { data: recs, error: rErr } = await supabase
+      .from('registros').select('*').order('created_at', { ascending: false })
+    if (rErr) { setError(`Error: ${rErr.message}`); setLoading(false); return }
     setRecords(recs ?? [])
-    setUsers(usrs ?? [])
     setLoading(false)
   }
 
@@ -736,26 +723,6 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
       }))
   , [records])
 
-  /* ── Create user ── */
-  async function handleCreateUser(e) {
-    e.preventDefault(); setSavingUser(true); setUserMsg(null)
-    if (!isConfigured) {
-      setUsers([...users, { ...newUser, id:Date.now(), activo:true }])
-      setUserMsg({ type:'ok', text:'Capturista creado (modo dev).' })
-      setNewUser(emptyUser); setSavingUser(false); return
-    }
-    const { error } = await supabase.from('usuarios').insert([newUser])
-    if (error) setUserMsg({ type:'err', text: error.message })
-    else { setUserMsg({ type:'ok', text:'Capturista creado correctamente.' }); setNewUser(emptyUser); loadData() }
-    setSavingUser(false)
-  }
-
-  async function toggleActivo(user) {
-    if (!isConfigured) { setUsers(users.map(u=>u.id===user.id?{...u,activo:!u.activo}:u)); return }
-    await supabase.from('usuarios').update({ activo: !user.activo }).eq('id', user.id)
-    loadData()
-  }
-
   /* ══ RENDER ══ */
   return (
     <div className="ad-page">
@@ -818,7 +785,6 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
             { key:'stats',   label:'Estadísticas' },
             { key:'mapa',    label:'Mapa' },
             { key:'records', label:`Registros${stats ? ` (${stats.n})` : ''}` },
-            { key:'users',   label:`Capturistas${users.length ? ` (${users.length})` : ''}` },
           ].map(t => (
             <button key={t.key} className={`ad-tab ${tab===t.key ? 'ad-tab-on' : ''}`} onClick={() => setTab(t.key)}>
               {t.label}
@@ -1172,57 +1138,6 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
           </div>
         )}
 
-        {/* ══ CAPTURISTAS ══ */}
-        {tab==='users' && !loading && (
-          <div>
-            <h2 className="ad-sect" style={{ marginTop:0 }}>Crear capturista</h2>
-            <form className="ad-user-form" onSubmit={handleCreateUser}>
-              <div className="ad-user-grid">
-                {[
-                  { field:'nombre',    label:'Nombre completo', placeholder:'Ej. Ana García', required:true },
-                  { field:'email',     label:'Correo (opcional)', placeholder:'ana@catastro.gob.mx', type:'email' },
-                  { field:'municipio', label:'Municipio', placeholder:'Ej. Ixmiquilpan' },
-                  { field:'cargo',     label:'Cargo', placeholder:'Ej. Capturista de campo' },
-                ].map(({ field, label, placeholder, required, type }) => (
-                  <div key={field} className="ad-uf">
-                    <label>{label}</label>
-                    <input type={type||'text'} value={newUser[field]}
-                      onChange={e => setNewUser(p=>({...p,[field]:e.target.value}))}
-                      placeholder={placeholder} required={required} />
-                  </div>
-                ))}
-              </div>
-              {userMsg && <div className={`ad-user-msg ${userMsg.type==='ok'?'msg-ok':'msg-err'}`}>{userMsg.text}</div>}
-              <button type="submit" className="ad-user-btn" disabled={savingUser}>
-                {savingUser ? 'Guardando…' : '+ Crear capturista'}
-              </button>
-            </form>
-
-            <h2 className="ad-sect">Capturistas registrados</h2>
-            {users.length === 0 ? <div className="ad-empty">No hay capturistas registrados.</div> : (
-              <div className="ad-table-wrap">
-                <table className="ad-table">
-                  <thead><tr><th>Nombre</th><th>Correo</th><th>Municipio</th><th>Cargo</th><th>Estado</th></tr></thead>
-                  <tbody>
-                    {users.map(u => (
-                      <tr key={u.id}>
-                        <td><b>{u.nombre}</b></td>
-                        <td>{u.email||'—'}</td>
-                        <td>{u.municipio||'—'}</td>
-                        <td>{u.cargo||'—'}</td>
-                        <td>
-                          <button className={`ad-status-btn ${u.activo?'status-on':'status-off'}`} onClick={()=>toggleActivo(u)}>
-                            {u.activo?'Activo':'Inactivo'}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   )
