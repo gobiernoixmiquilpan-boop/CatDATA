@@ -1,4 +1,5 @@
-const KEY = 'catastro_offline_queue'
+const KEY          = 'catastro_offline_queue'
+const CONFLICT_KEY = 'catastro_conflicts'
 
 export function getQueue() {
   try { return JSON.parse(localStorage.getItem(KEY) ?? '[]') }
@@ -19,4 +20,26 @@ export function dequeue(qid) {
 
 export function queueSize() {
   return getQueue().length
+}
+
+/* ── Conflictos (duplicados rechazados por el servidor) ── */
+export function getConflicts() {
+  try { return JSON.parse(localStorage.getItem(CONFLICT_KEY) ?? '[]') }
+  catch { return [] }
+}
+
+export function addConflict(record) {
+  const conflicts = getConflicts()
+  localStorage.setItem(CONFLICT_KEY, JSON.stringify([
+    ...conflicts,
+    { ...record, _conflictAt: new Date().toISOString() },
+  ]))
+}
+
+export function clearConflicts() {
+  localStorage.removeItem(CONFLICT_KEY)
+}
+
+export function conflictCount() {
+  return getConflicts().length
 }

@@ -1077,6 +1077,67 @@ body {
 }
 .install-dismiss:hover { color: #fff; }
 
+/* ── Conflict banner ── */
+.conflict-banner {
+  background: #431407;
+  border-bottom: 1px solid #7c2d12;
+  color: #fff;
+  padding: .65rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+.conflict-banner-content {
+  display: flex;
+  align-items: flex-start;
+  gap: .625rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.conflict-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.conflict-text {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  font-size: .8rem;
+  line-height: 1.4;
+}
+
+.conflict-text strong {
+  font-size: .83rem;
+  font-weight: 700;
+  color: #fca5a5;
+}
+
+.conflict-text span {
+  color: rgba(255,255,255,.75);
+  word-break: break-word;
+}
+
+.conflict-dismiss {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.5);
+  cursor: pointer;
+  font-size: .9rem;
+  padding: .1rem .3rem;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color .15s;
+}
+.conflict-dismiss:hover { color: #fff; }
+
 .fc-topbar-right {
   display: flex;
   align-items: center;

@@ -10,7 +10,7 @@ import {
 } from './Icons'
 import { supabase, isConfigured } from '../lib/supabase'
 import { toUTM } from '../utils/utm'
-import { enqueue, getQueue, dequeue, queueSize } from '../utils/offlineQueue'
+import { enqueue, getQueue, dequeue, queueSize, addConflict, getConflicts, clearConflicts, conflictCount } from '../utils/offlineQueue'
 
 /* ─── Data ──────────────────────────────────────────────── */
 const TIPOS_VIALIDAD = [
@@ -654,8 +654,9 @@ export default function FormCatastro({ onAdminClick, isAdmin = false }) {
   const [observaciones, setObservaciones] = useState('')
   const [toast, setToast]               = useState('')
   const [saving, setSaving]             = useState(false)
-  const [isOnline, setIsOnline]         = useState(navigator.onLine)
-  const [pendingCount, setPendingCount] = useState(queueSize)
+  const [isOnline, setIsOnline]           = useState(navigator.onLine)
+  const [pendingCount, setPendingCount]   = useState(queueSize)
+  const [conflicts, setConflicts]         = useState(() => getConflicts())
   const [installPrompt, setInstallPrompt] = useState(null)
   const [refMarkers, setRefMarkers]     = useState([])
   // Cache stores { manzana, data } so manzanaDup and checkingManzana are fully derived —
@@ -765,14 +766,30 @@ export default function FormCatastro({ onAdminClick, isAdmin = false }) {
     const queue = getQueue()
     if (!queue.length) return
     let synced = 0
+    let newConflicts = 0
     for (const item of queue) {
       const { _qid, _at, ...record } = item
       const { error } = await supabase.from('registros').insert([record])
-      if (!error) { dequeue(_qid); synced++ }
+      if (!error) {
+        dequeue(_qid)
+        synced++
+      } else if (error.code === '23505') {
+        // Violación UNIQUE — manzana ya registrada por otro capturista
+        dequeue(_qid)
+        addConflict({ ...record, _qid, _at })
+        newConflicts++
+      }
+      // Otros errores (red, servidor) → dejar en cola para reintentar
     }
-    if (synced > 0) {
-      setPendingCount(queueSize())
+    const updatedConflicts = getConflicts()
+    setConflicts(updatedConflicts)
+    setPendingCount(queueSize())
+    if (synced > 0 && newConflicts === 0) {
       showToast(`${synced} registro${synced > 1 ? 's' : ''} sincronizado${synced > 1 ? 's' : ''} ✓`)
+    } else if (synced > 0 && newConflicts > 0) {
+      showToast(`${synced} sincronizado${synced > 1 ? 's' : ''} — ${newConflicts} conflicto${newConflicts > 1 ? 's' : ''} ⚠`)
+    } else if (newConflicts > 0) {
+      showToast(`${newConflicts} manzana${newConflicts > 1 ? 's' : ''} ya registrada${newConflicts > 1 ? 's' : ''} por otro capturista ⚠`)
     }
   }
 
@@ -849,6 +866,22 @@ export default function FormCatastro({ onAdminClick, isAdmin = false }) {
         <div className="sync-banner">
           <span>⟳ {pendingCount} registro{pendingCount > 1 ? 's' : ''} pendiente{pendingCount > 1 ? 's' : ''} de sincronizar</span>
           <button className="sync-now-btn" onClick={syncOfflineQueue}>Sincronizar ahora</button>
+        </div>
+      )}
+
+      {/* Conflictos banner */}
+      {conflicts.length > 0 && (
+        <div className="conflict-banner">
+          <div className="conflict-banner-content">
+            <span className="conflict-icon">⚠</span>
+            <div className="conflict-text">
+              <strong>{conflicts.length} manzana{conflicts.length > 1 ? 's' : ''} con conflicto</strong>
+              <span>
+                {conflicts.map(c => `Mz ${c.manzana}`).join(', ')} — ya {conflicts.length > 1 ? 'fueron registradas' : 'fue registrada'} por otro capturista. Avisa al administrador.
+              </span>
+            </div>
+          </div>
+          <button className="conflict-dismiss" onClick={() => { clearConflicts(); setConflicts([]) }} title="Descartar">✕</button>
         </div>
       )}
 
