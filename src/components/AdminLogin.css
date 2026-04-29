@@ -1,112 +1,269 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* ── Tokens — mismos que FormCatastro ── */
+:root {
+  --ink:     #0a0a0a;
+  --ink-2:   #404040;
+  --ink-3:   #737373;
+  --ink-4:   #a3a3a3;
+  --surface: #ffffff;
+  --bg:      #f5f5f5;
+  --border:  #e5e5e5;
+  --border-2:#d4d4d4;
+  --r:  10px;
+  --r2: 14px;
+  --sh: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 14px rgba(0,0,0,.08);
+}
 
+/* ── Page ── */
 .al-page {
   min-height: 100vh;
+  background: var(--bg);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding-top: 52px;
+}
+
+/* ── Topbar — idéntico al de FormCatastro ── */
+.al-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 52px;
+  background: var(--ink);
+  z-index: 100;
+}
+
+.al-topbar-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 20px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: #f5f5f5;
-  font-family: 'Inter', sans-serif;
-  padding: 1rem;
+  justify-content: space-between;
 }
 
-.al-card {
-  background: #fff;
-  border: 1px solid #e5e5e5;
-  border-radius: 16px;
-  padding: 2rem;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 4px 24px rgba(0,0,0,.06);
+.al-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
 }
 
-.al-back {
-  background: none;
-  border: none;
-  color: #737373;
-  font-size: .85rem;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 1.5rem;
-  font-family: inherit;
-  transition: color .15s;
-  display: block;
-}
-.al-back:hover { color: #0a0a0a; }
-
-.al-logo {
+.al-brand span {
+  font-size: .82rem;
   font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: -.03em;
-  margin-bottom: .875rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #fff;
 }
 
-.al-card h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 .3rem;
+.al-back-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 7px;
+  padding: .25rem .75rem;
+  font-size: .75rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.55);
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: .03em;
+  transition: all .15s;
+  white-space: nowrap;
+}
+
+.al-back-btn:hover {
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  border-color: rgba(255,255,255,.35);
+}
+
+/* ── Body — centrado ── */
+.al-body {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 40px 18px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* ── Card ── */
+.al-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r2);
+  box-shadow: var(--sh2);
+  overflow: hidden;
+}
+
+/* ── Card header ── */
+.al-card-head {
+  padding: 28px 28px 20px;
+  background: var(--ink);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.al-card-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.al-card-head h1 {
+  font-size: 1.35rem;
+  font-weight: 800;
   letter-spacing: -.03em;
+  color: #fff;
+  margin-bottom: 4px;
 }
 
 .al-sub {
-  font-size: .875rem;
+  font-size: .82rem;
   color: #737373;
-  margin: 0 0 1.5rem;
+  line-height: 1.4;
+  margin: 0;
 }
 
-.al-form { display: flex; flex-direction: column; gap: .875rem; }
+/* ── Form body ── */
+.al-form-body {
+  padding: 24px 28px 28px;
+}
 
-.al-field { display: flex; flex-direction: column; gap: .375rem; }
-.al-field label { font-size: .8rem; font-weight: 600; color: #404040; }
+.al-warn {
+  margin: 0 28px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: var(--r);
+  padding: .875rem 1rem;
+  font-size: .82rem;
+  color: #92400e;
+  line-height: 1.5;
+  margin-top: 20px;
+}
+
+.al-form {
+  display: flex;
+  flex-direction: column;
+  gap: .875rem;
+  padding: 24px 28px 0;
+}
+
+.al-field {
+  display: flex;
+  flex-direction: column;
+  gap: .325rem;
+}
+
+.al-field label {
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.al-dev-note {
+  font-size: .7rem;
+  font-weight: 500;
+  color: var(--ink-4);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .al-field input {
-  border: 1.5px solid #e5e5e5;
-  border-radius: 8px;
-  padding: .625rem .875rem;
-  font-size: .9rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  font-size: .92rem;
   font-family: inherit;
+  color: var(--ink);
+  background: #fafafa;
   outline: none;
-  transition: border-color .15s;
+  transition: border-color .15s, background .15s;
 }
-.al-field input:focus { border-color: #0a0a0a; }
+
+.al-field input::placeholder {
+  color: var(--ink-4);
+}
+
+.al-field input:focus {
+  border-color: var(--ink);
+  background: #fff;
+}
 
 .al-error {
   background: #fef2f2;
   border: 1px solid #fecaca;
-  border-radius: 8px;
+  border-radius: var(--r);
   padding: .625rem .875rem;
-  font-size: .85rem;
+  font-size: .82rem;
   color: #b91c1c;
-}
-
-.al-warn {
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 10px;
-  padding: 1rem;
-  font-size: .875rem;
-  color: #92400e;
-  line-height: 1.5;
-  margin-top: 1rem;
-}
-.al-warn code {
-  background: #fef3c7;
-  padding: .1rem .3rem;
-  border-radius: 4px;
-  font-family: monospace;
+  font-weight: 500;
 }
 
 .al-btn {
-  background: #0a0a0a;
+  width: 100%;
+  padding: 14px;
+  background: var(--ink);
   color: #fff;
   border: none;
-  border-radius: 10px;
-  padding: .75rem;
-  font-size: .925rem;
-  font-weight: 600;
+  border-radius: var(--r2);
+  font-size: .95rem;
+  font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: opacity .15s;
-  margin-top: .25rem;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  margin-top: 4px;
 }
-.al-btn:hover { opacity: .85; }
-.al-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.al-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.22);
+}
+
+.al-btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Footer ── */
+.al-footer {
+  text-align: center;
+  font-size: .8rem;
+  color: var(--ink-4);
+  padding: 20px 28px 24px;
+}
+
+.al-link {
+  background: none;
+  border: none;
+  color: var(--ink-2);
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0;
+  transition: color .15s;
+}
+
+.al-link:hover { color: var(--ink); }
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .al-body { padding: 24px 14px 48px; }
+  .al-card-head { padding: 22px 20px 16px; gap: 12px; }
+  .al-card-head h1 { font-size: 1.15rem; }
+  .al-form { padding: 18px 20px 0; }
+  .al-warn { margin: 0 20px; margin-top: 16px; }
+  .al-footer { padding: 16px 20px 20px; }
+}

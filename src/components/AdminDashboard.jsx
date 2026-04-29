@@ -548,7 +548,7 @@ function DetailModal({ record, onClose, onEdit, onPrint }) {
 }
 
 /* ══════════════════════════════════════════════════════════════ */
-export default function AdminDashboard({ session, onLogout }) {
+export default function AdminDashboard({ session, onLogout, onBack }) {
   const [tab, setTab]         = useState('stats')
   const [records, setRecords] = useState([])
   const [users, setUsers]     = useState([])
@@ -800,6 +800,11 @@ export default function AdminDashboard({ session, onLogout }) {
           <span className="ad-brand">Catastro <span className="ad-tag">Admin</span></span>
           <div className="ad-topbar-right">
             <span className="ad-email">{session?.user?.email}</span>
+            {onBack && (
+              <button className="ad-back-btn" onClick={onBack} title="Volver al formulario">
+                ← Formulario
+              </button>
+            )}
             <button className="ad-logout-btn" onClick={onLogout}>Cerrar sesión</button>
           </div>
         </div>

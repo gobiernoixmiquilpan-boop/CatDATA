@@ -33,9 +33,21 @@ export default function App() {
   }
 
   if (view === 'admin') {
-    if (!session) return <AdminLogin onBack={() => setView('form')} onLoginLocal={(s) => { setSession(s); setView('admin') }} />
-    return <AdminDashboard session={session} onLogout={handleLogout} />
+    if (!session) return (
+      <div key="login" className="app-view">
+        <AdminLogin onBack={() => setView('form')} onLoginLocal={(s) => { setSession(s); setView('admin') }} />
+      </div>
+    )
+    return (
+      <div key="admin" className="app-view">
+        <AdminDashboard session={session} onLogout={handleLogout} onBack={() => setView('form')} />
+      </div>
+    )
   }
 
-  return <FormCatastro onAdminClick={() => setView('admin')} isAdmin={false} />
+  return (
+    <div key="form" className="app-view">
+      <FormCatastro onAdminClick={() => setView('admin')} isAdmin={false} />
+    </div>
+  )
 }

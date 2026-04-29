@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase, isConfigured, setLocalSession } from '../lib/supabase'
+import { IconAppLogo } from './Icons'
 import './AdminLogin.css'
 
 export default function AdminLogin({ onBack, onLoginLocal }) {
@@ -16,7 +17,6 @@ export default function AdminLogin({ onBack, onLoginLocal }) {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) setError(error.message)
     } else {
-      // Local dev mode - accept any email
       if (!email || !email.includes('@')) {
         setError('Ingresa un email válido para modo desarrollo')
       } else {
@@ -27,83 +27,78 @@ export default function AdminLogin({ onBack, onLoginLocal }) {
     setLoading(false)
   }
 
-  if (!isConfigured) {
-    return (
-      <div className="al-page">
-        <div className="al-card">
-          <button className="al-back" onClick={onBack}>← Volver al formulario</button>
-          <div className="al-logo">Catastro</div>
-          <h1>Acceso Admin</h1>
-          <div className="al-warn" style={{ background: '#fef3c7', borderColor: '#f59e0b', marginBottom: '1.5rem' }}>
-            <b>Modo desarrollo (sin Supabase).</b><br />
-            Ingresa cualquier email para acceder al admin en modo local.
+  return (
+    <div className="al-page">
+
+      {/* Topbar — igual al del formulario */}
+      <header className="al-topbar">
+        <div className="al-topbar-inner">
+          <div className="al-brand">
+            <IconAppLogo size={26} />
+            <span>Catastro</span>
           </div>
+          <button className="al-back-btn" onClick={onBack}>
+            ← Formulario
+          </button>
+        </div>
+      </header>
+
+      {/* Contenido centrado */}
+      <div className="al-body">
+        <div className="al-card">
+
+          <div className="al-card-head">
+            <div className="al-card-icon">
+              <IconAppLogo size={36} />
+            </div>
+            <div>
+              <h1>Acceso Admin</h1>
+              <p className="al-sub">
+                {isConfigured
+                  ? 'Inicia sesión para gestionar registros y capturistas'
+                  : 'Modo desarrollo — ingresa cualquier email'}
+              </p>
+            </div>
+          </div>
+
+          {!isConfigured && (
+            <div className="al-warn">
+              <b>Modo desarrollo.</b> Sin Supabase configurado. Cualquier email es válido para acceder al panel.
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="al-form">
             <div className="al-field">
-              <label>Correo electrónico (desarrollo)</label>
+              <label>Correo electrónico</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="admin@local.dev"
+                placeholder={isConfigured ? 'admin@ixmiquilpan.gob.mx' : 'admin@local.dev'}
                 required
                 autoFocus
               />
             </div>
             <div className="al-field">
-              <label>Contraseña (ignorada)</label>
+              <label>Contraseña{!isConfigured && <span className="al-dev-note"> (ignorada en dev)</span>}</label>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="(no requerida en modo dev)"
+                placeholder="••••••••"
+                required={isConfigured}
               />
             </div>
             {error && <div className="al-error">{error}</div>}
             <button type="submit" className="al-btn" disabled={loading}>
-              {loading ? 'Ingresando…' : 'Acceder al admin'}
+              {loading ? 'Verificando…' : 'Ingresar al panel'}
             </button>
           </form>
+
+          <p className="al-footer">
+            ¿Capturista? <button className="al-link" onClick={onBack}>Vuelve al formulario de captura</button>
+          </p>
         </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="al-page">
-      <div className="al-card">
-        <button className="al-back" onClick={onBack}>← Volver al formulario</button>
-        <div className="al-logo">Catastro</div>
-        <h1>Acceso Admin</h1>
-        <p className="al-sub">Inicia sesión para ver estadísticas y gestionar capturistas</p>
-
-        <form onSubmit={handleSubmit} className="al-form">
-          <div className="al-field">
-            <label>Correo electrónico</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="admin@catastro.gob.mx"
-              required
-              autoFocus
-            />
-          </div>
-          <div className="al-field">
-            <label>Contraseña</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          {error && <div className="al-error">{error}</div>}
-          <button type="submit" className="al-btn" disabled={loading}>
-            {loading ? 'Ingresando…' : 'Ingresar'}
-          </button>
-        </form>
       </div>
     </div>
   )
