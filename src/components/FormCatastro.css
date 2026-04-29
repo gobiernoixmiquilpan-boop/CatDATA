@@ -1130,3 +1130,109 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,.3);
   flex-shrink: 0;
 }
+
+/* ════════════════════════════════════════════════════════════
+   MÓVIL — mejoras ≤ 640px
+════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* Topbar más compacto */
+  .fc-topbar-inner { padding: 0 14px; gap: 12px; }
+  .fc-topbar-brand span { font-size: .78rem; letter-spacing: .08em; }
+
+  /* Form padding reducido */
+  .fc-form { padding: 18px 14px 80px; gap: 12px; }
+
+  /* Hero */
+  .fc-hero { padding: 20px 16px 16px; border-radius: 12px; }
+  .fc-hero-brand { gap: 12px; margin-bottom: 16px; }
+  .fc-hero-brand h1 { font-size: 1.25rem; }
+  .fc-hero-brand p  { font-size: .8rem; }
+
+  /* Steps más pequeños */
+  .fc-step { font-size: .7rem; gap: 5px; }
+  .step-num { width: 20px; height: 20px; font-size: .65rem; }
+  .step-sep { width: 16px; margin: 0 4px; }
+
+  /* Cards */
+  .fc-card { border-radius: 12px; }
+  .card-head { padding: 14px 16px; gap: 12px; }
+  .card-head h2 { font-size: .9rem; }
+  .card-head p  { font-size: .74rem; }
+  .card-body { padding: 14px; gap: 16px; }
+
+  /* Manzana trigger — más alto para touch */
+  .manzana-trigger { padding: 14px 16px; }
+  .manzana-val { font-size: 1.2rem; }
+
+  /* Opciones de servicio — 2 columnas en pantallas chicas */
+  .row-opts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    gap: 5px;
+  }
+  .row-opt {
+    justify-content: center;
+    padding: 10px 6px;
+    font-size: .78rem;
+    min-height: 42px;
+  }
+
+  /* Pavimento */
+  .pav-grid { grid-template-columns: repeat(3, 1fr); }
+  .pav-btn  { padding: 7px 4px; }
+
+  /* Banners — evitar desbordamiento */
+  .offline-banner, .sync-banner {
+    font-size: .78rem;
+    padding: .5rem .875rem;
+    gap: .4rem;
+  }
+  .install-banner { font-size: .78rem; padding: .5rem .875rem; gap: .5rem; }
+  .sync-now-btn { padding: .2rem .6rem; font-size: .74rem; }
+
+  /* Mapa tipos — scroll horizontal */
+  .mapa-tipos { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+  .mapa-tipos::-webkit-scrollbar { display: none; }
+  .mapa-tipo-btn { flex-shrink: 0; }
+
+  /* Mapa más alto en móvil */
+  .mapa-wrap { height: 320px; }
+  .mapa-card-head { padding: 14px 16px; gap: 12px; }
+  .mapa-card-head h2 { font-size: .9rem; }
+  .mapa-card-head p  { font-size: .74rem; }
+
+  /* Resumen 3 col en móvil */
+  .mapa-resumen { grid-template-columns: repeat(3, 1fr); padding: 10px 14px; }
+
+  /* Observaciones */
+  .obs-card-head  { padding: 14px 16px; gap: 12px; }
+  .obs-card-head h2 { font-size: .9rem; }
+  .obs-card-body  { padding: 14px; }
+
+  /* Botón submit */
+  .btn-submit { padding: 16px; font-size: .92rem; border-radius: 12px; }
+
+  /* Modal numpad — más grande para dedos */
+  .numpad-key { padding: 18px 8px; font-size: 1.3rem; }
+  .modal-confirm { padding: 15px; }
+
+  /* Score panel (admin view) */
+  .score-panel-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+}
+
+/* ════════════════════════════════════════════════════════════
+   MÓVIL muy pequeño — ≤ 380px
+════════════════════════════════════════════════════════════ */
+@media (max-width: 380px) {
+  .fc-topbar-brand span { display: none; }
+  .mapa-tipos { gap: 5px; }
+  .mapa-tipo-btn { padding: 7px 10px; font-size: .74rem; }
+  .mapa-tipo-label { display: none; }
+  .mapa-resumen { grid-template-columns: repeat(3, 1fr); }
+  .row-opts { grid-template-columns: 1fr 1fr; }
+  .vial-grid { grid-template-columns: repeat(4, 1fr); gap: 5px; }
+  .vial-btn { padding: 8px 4px; }
+  .vial-code { font-size: .78rem; }
+  .vial-name { font-size: .62rem; }
+}
