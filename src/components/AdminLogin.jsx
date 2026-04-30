@@ -55,7 +55,7 @@ export default function AdminLogin({ onBack, onLoginLocal }) {
               <h1>Acceso Admin</h1>
               <p className="al-sub">
                 {isConfigured
-                  ? 'Inicia sesión para gestionar registros y capturistas'
+                  ? 'Inicia sesión para gestionar los registros'
                   : 'Modo desarrollo — ingresa cualquier email'}
               </p>
             </div>
@@ -96,7 +96,7 @@ export default function AdminLogin({ onBack, onLoginLocal }) {
           </form>
 
           <p className="al-footer">
-            ¿Capturista? <button className="al-link" onClick={onBack}>Vuelve al formulario de captura</button>
+            <button className="al-link" onClick={onBack}>← Volver al formulario de captura</button>
           </p>
         </div>
       </div>
