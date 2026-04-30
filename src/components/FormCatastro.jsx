@@ -718,7 +718,12 @@ export default function FormCatastro({ onAdminClick, isAdmin = false }) {
     EQUIPAMIENTO_LIST.filter(e => equipamiento[e.key] !== '').length
   const progressPct = Math.round((completedFields / TOTAL_FIELDS) * 100)
 
-  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2200) }
+  const toastTimer = useRef(null)
+  const showToast = (msg) => {
+    clearTimeout(toastTimer.current)
+    setToast(msg)
+    toastTimer.current = setTimeout(() => setToast(''), 2200)
+  }
 
   useEffect(() => {
     if (!manzana || !isConfigured || !supabase) return
@@ -743,8 +748,8 @@ export default function FormCatastro({ onAdminClick, isAdmin = false }) {
   // Cargar puntos ya registrados como referencia en el mapa
   useEffect(() => {
     if (!isConfigured || !supabase) return
-    supabase.from('registros').select('manzana, infra_mapa').then(({ data }) => {
-      if (!data) return
+    supabase.from('registros').select('manzana, infra_mapa').then(({ data, error }) => {
+      if (error || !data) return
       const all = []
       data.forEach(r => {
         if (Array.isArray(r.infra_mapa)) {
@@ -761,6 +766,7 @@ export default function FormCatastro({ onAdminClick, isAdmin = false }) {
     const goOffline = () => setIsOnline(false)
     window.addEventListener('online',  goOnline)
     window.addEventListener('offline', goOffline)
+    if (navigator.onLine && queueSize() > 0) syncOfflineQueue()
     return () => {
       window.removeEventListener('online',  goOnline)
       window.removeEventListener('offline', goOffline)
@@ -882,7 +888,6 @@ export default function FormCatastro({ onAdminClick, isAdmin = false }) {
               <div className="saved-row"><span>Manzana</span><b>{savedSummary.manzana}</b></div>
               <div className="saved-row"><span>Vialidad</span><b>{savedSummary.tipo_vialidad} {savedSummary.nombre_vialidad}</b></div>
               <div className="saved-row"><span>Puntos en mapa</span><b>{Array.isArray(savedSummary.infra_mapa) ? savedSummary.infra_mapa.length : 0}</b></div>
-              <div className="saved-row saved-row-total"><span>Puntaje total</span><b>{Number(savedSummary.total).toFixed(2)}</b></div>
             </div>
             <button className="saved-summary-btn" onClick={() => setSavedSummary(null)}>
               Capturar siguiente manzana
@@ -910,7 +915,6 @@ export default function FormCatastro({ onAdminClick, isAdmin = false }) {
                     </div>
                     <div className="queue-item-meta">
                       <span>{new Date(item._at).toLocaleString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })}</span>
-                      <span className="queue-badge">{Number(item.total).toFixed(1)} pts</span>
                     </div>
                   </div>
                 ))

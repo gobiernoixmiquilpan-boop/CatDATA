@@ -13,10 +13,9 @@ export default function App() {
   useEffect(() => {
     if (!isConfigured) return
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setAuthReady(true)
-    })
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => { setSession(session); setAuthReady(true) })
+      .catch(() => setAuthReady(true))
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s)
     })

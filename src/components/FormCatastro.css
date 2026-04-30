@@ -1470,6 +1470,20 @@ body {
 }
 .topbar-pending-badge:hover { opacity: .8; }
 
+/* saved-summary y queue-modal → bottom sheet en móvil */
+@media (max-width: 600px) {
+  .saved-summary {
+    max-width: none;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+  .queue-modal {
+    max-width: none;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+}
+
 /* ════════════════════════════════════════════════════════════
    MÓVIL muy pequeño — ≤ 380px
 ════════════════════════════════════════════════════════════ */

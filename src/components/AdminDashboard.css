@@ -1385,6 +1385,7 @@
     justify-content: flex-start;
   }
   .btn-export { font-size: .78rem; padding: .45rem .875rem; flex: 1; min-width: 80px; text-align: center; }
+  .ad-records-count { width: 100%; }
 
   /* Tabla — scroll horizontal con ancho mínimo */
   .ad-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -1435,6 +1436,28 @@
   /* Sección de capturistas */
   .ad-user-form { padding: 1rem; }
   .ad-user-grid { gap: .625rem; }
+
+  /* Confirm modal → bottom sheet en móvil */
+  .confirm-modal {
+    width: 100%;
+    max-width: none;
+    border-radius: 16px 16px 0 0;
+  }
+
+  /* Mapa admin: reducir altura en móvil */
+  .mapa-admin-wrap .leaflet-container { height: 300px !important; }
+
+  /* Safe area para bottom sheets (iPhone home indicator) */
+  .detail-modal, .edit-modal, .confirm-modal {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  /* Filtros de mapa: export buttons alineados a la izquierda en wrap */
+  .mapa-admin-filters-exports {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0 !important;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1446,4 +1469,12 @@
   .manzanas-grid { grid-template-columns: 1fr 1fr; gap: .3rem; }
   .detail-score-item span { font-size: .65rem; }
   .detail-score-item b { font-size: 1rem; }
+
+  /* Topbar muy apretado — botones más compactos */
+  .ad-back-btn, .ad-logout-btn { padding: .2rem .5rem; font-size: .7rem; }
+  .ad-topbar-right { gap: .4rem; }
+  .ad-topbar-inner { padding: .65rem .75rem; }
+
+  /* Barra de servicios en modal edición: etiqueta más corta */
+  .edit-serv-label { font-size: .75rem; }
 }

@@ -571,9 +571,11 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
     if (!isConfigured || !supabase) return
     const channel = supabase.channel('registros-realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'registros' },
-        payload => setRecords(prev => [payload.new, ...prev]))
+        payload => setRecords(prev =>
+          prev.some(r => r.id === payload.new.id) ? prev : [payload.new, ...prev]
+        ))
       .subscribe()
-    return () => supabase.removeChannel(channel)
+    return () => { channel.unsubscribe(); supabase.removeChannel(channel) }
   }, [])
 
   // Reset page when search/date changes
@@ -635,7 +637,10 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
 
   /* ── Delete ── */
   async function handleDelete(id) {
-    if (isConfigured) await supabase.from('registros').delete().eq('id', id)
+    if (isConfigured) {
+      const { error } = await supabase.from('registros').delete().eq('id', id)
+      if (error) { alert(`Error al eliminar: ${error.message}`); setDeleting(null); return }
+    }
     setRecords(r => r.filter(x => x.id !== id))
     setDeleting(null)
   }
@@ -862,7 +867,7 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
                   </button>
                 ))}
                 {allPoints.length > 0 && (
-                  <div style={{ marginLeft:'auto', display:'flex', gap:'.4rem' }}>
+                  <div className="mapa-admin-filters-exports" style={{ marginLeft:'auto', display:'flex', gap:'.4rem' }}>
                     <button className="mapa-admin-filter-btn" onClick={() => exportGeoJSON(records)}>⬇ GeoJSON</button>
                     <button className="mapa-admin-filter-btn btn-dxf"  onClick={() => exportDXF(records)}>⬇ DXF AutoCAD</button>
                   </div>
@@ -932,7 +937,7 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
               <h2 className="ad-sect">Calidad de Servicios</h2>
               <div className="ad-chart-wrap">
                 <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={servChartData} layout="vertical" margin={{ top:5, right:30, left:90, bottom:5 }}>
+                  <BarChart data={servChartData} layout="vertical" margin={{ top:5, right:30, left:0, bottom:5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5"/>
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize:12 }}/>
                     <YAxis type="category" dataKey="label" tick={{ fontSize:12 }} width={90}/>
@@ -947,7 +952,7 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
               <h2 className="ad-sect">Equipamiento Urbano</h2>
               <div className="ad-chart-wrap">
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={equipChartData} layout="vertical" margin={{ top:5, right:30, left:90, bottom:5 }}>
+                  <BarChart data={equipChartData} layout="vertical" margin={{ top:5, right:30, left:0, bottom:5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5"/>
                     <XAxis type="number" allowDecimals={false} tick={{ fontSize:12 }}/>
                     <YAxis type="category" dataKey="label" tick={{ fontSize:12 }} width={90}/>
@@ -1032,7 +1037,7 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
                       <BarChart
                         data={topManzanas}
                         layout="vertical"
-                        margin={{ top:5, right:50, left:60, bottom:5 }}
+                        margin={{ top:5, right:50, left:0, bottom:5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" horizontal={false}/>
                         <XAxis type="number" domain={[0,'auto']} tick={{ fontSize:12 }}/>
