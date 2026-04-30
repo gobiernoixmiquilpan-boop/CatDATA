@@ -3,7 +3,6 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, AreaChart, Area,
   PieChart, Pie, Cell,
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from 'recharts'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
@@ -564,7 +563,7 @@ function DetailModal({ record, onClose, onEdit, onPrint }) {
             <>
               <h3 className="detail-sect">Infraestructura ({infraMarkers.length} punto{infraMarkers.length!==1?'s':''})</h3>
               <div className="detail-map-wrap">
-                <MapContainer center={mapCenter} zoom={17} style={{ height:'260px', width:'100%' }} scrollWheelZoom={false}>
+                <MapContainer center={mapCenter} zoom={17} style={{ height:'360px', width:'100%' }} scrollWheelZoom={false}>
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
                   {infraMarkers.map((m,i) => (
                     <Marker key={i} position={[m.lat,m.lng]} icon={makePinIcon(PIN_COLORS[m.type]??'#666')}>
@@ -627,11 +626,13 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
   const [mapSearch, setMapSearch]   = useState('')
   const [mapFlyTarget, setMapFlyTarget] = useState(null)
 
-  // Records search / filter / pagination
+  // Records search / filter / sort / pagination
   const [search, setSearch]     = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo]     = useState('')
   const [page, setPage]         = useState(1)
+  const [sortCol, setSortCol]   = useState('fecha')
+  const [sortDir, setSortDir]   = useState('desc')
 
   useEffect(() => { loadData() }, [])
 
@@ -646,8 +647,8 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
     return () => { channel.unsubscribe(); supabase.removeChannel(channel) }
   }, [])
 
-  // Reset page when search/date changes
-  useEffect(() => { setPage(1) }, [search, dateFrom, dateTo])
+  // Reset page when search/date/sort changes
+  useEffect(() => { setPage(1) }, [search, dateFrom, dateTo, sortCol, sortDir])
 
   async function loadData() {
     setLoading(true); setError('')
@@ -726,8 +727,26 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
     }
     if (dateFrom) res = res.filter(r => new Date(r.created_at) >= new Date(dateFrom))
     if (dateTo)   res = res.filter(r => new Date(r.created_at) <= new Date(dateTo + 'T23:59:59'))
+    res = [...res].sort((a, b) => {
+      let va, vb
+      if (sortCol === 'fecha')      { va = a.created_at; vb = b.created_at }
+      else if (sortCol === 'manzana')    { va = Number(a.manzana); vb = Number(b.manzana) }
+      else if (sortCol === 'servicios')  { va = Number(a.subtotal_servicios); vb = Number(b.subtotal_servicios) }
+      else if (sortCol === 'equip')      { va = Number(a.subtotal_equipamiento); vb = Number(b.subtotal_equipamiento) }
+      else if (sortCol === 'total')      { va = Number(a.total); vb = Number(b.total) }
+      else return 0
+      if (va < vb) return sortDir === 'asc' ? -1 : 1
+      if (va > vb) return sortDir === 'asc' ? 1 : -1
+      return 0
+    })
     return res
-  }, [records, search, dateFrom, dateTo])
+  }, [records, search, dateFrom, dateTo, sortCol, sortDir])
+
+  const toggleSort = (col) => {
+    if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortCol(col); setSortDir('desc') }
+  }
+  const sortIcon = (col) => sortCol === col ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''
 
   const totalPages  = Math.max(1, Math.ceil(filteredRecords.length / PAGE_SIZE))
   const pagedRecords = filteredRecords.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE)
@@ -1013,7 +1032,14 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
               {(allPoints.length === 0 && mapView === 'infra')
                 ? <div className="ad-empty">No hay puntos de infraestructura registrados aún.</div>
                 : (
-                  <div className="mapa-admin-wrap">
+                  <div className="mapa-admin-wrap" style={{ position:'relative' }}>
+                    {mapView === 'score' && (
+                      <div className="map-score-legend-sticky">
+                        <span><span className="msl-dot" style={{background:'#15803d'}}/>Alto ≥12</span>
+                        <span><span className="msl-dot" style={{background:'#6366f1'}}/>Medio ≥8</span>
+                        <span><span className="msl-dot" style={{background:'#b45309'}}/>Bajo &lt;8</span>
+                      </div>
+                    )}
                     <MapContainer center={mapCenter} zoom={15} style={{ height:'520px', width:'100%' }}>
                       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
                       {mapFlyTarget && <AdminFlyTo target={mapFlyTarget} />}
@@ -1118,20 +1144,24 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
                 </ResponsiveContainer>
               </div>
 
-              {/* Radar — calidad promedio por servicio */}
-              <h2 className="ad-sect">Radar de Calidad de Servicios</h2>
+              {/* Calidad promedio por servicio — horizontal bar */}
+              <h2 className="ad-sect">Calidad Promedio por Servicio</h2>
               <div className="ad-chart-wrap">
                 <p style={{ fontSize:'.75rem', color:'#a3a3a3', marginBottom:'.5rem', marginLeft:'.5rem' }}>
-                  Porcentaje promedio de calidad por servicio (100% = todos Bueno, 0% = todos Ninguno)
+                  100% = todos Bueno · 0% = todos Ninguno
                 </p>
-                <ResponsiveContainer width="100%" height={320}>
-                  <RadarChart data={radarData} margin={{ top:10, right:30, left:30, bottom:10 }}>
-                    <PolarGrid stroke="#e5e5e5"/>
-                    <PolarAngleAxis dataKey="label" tick={{ fontSize:11, fill:'#737373' }}/>
-                    <PolarRadiusAxis angle={90} domain={[0,100]} tick={{ fontSize:10, fill:'#a3a3a3' }} tickCount={5}/>
-                    <Radar name="Calidad %" dataKey="calidad" stroke="#6366f1" fill="#6366f1" fillOpacity={0.25} strokeWidth={2}/>
-                    <Tooltip formatter={(v) => [`${v}%`, 'Calidad promedio']}/>
-                  </RadarChart>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={radarData} layout="vertical" margin={{ top:4, right:50, left:0, bottom:4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" horizontal={false}/>
+                    <XAxis type="number" domain={[0,100]} tickFormatter={v=>`${v}%`} tick={{ fontSize:11 }}/>
+                    <YAxis type="category" dataKey="label" tick={{ fontSize:12 }} width={110}/>
+                    <Tooltip formatter={(v) => [`${v}%`, 'Calidad']}/>
+                    <Bar dataKey="calidad" name="Calidad" radius={[0,6,6,0]}>
+                      {radarData.map((entry, i) => (
+                        <Cell key={i} fill={entry.calidad >= 70 ? '#15803d' : entry.calidad >= 40 ? '#6366f1' : '#b91c1c'}/>
+                      ))}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
 
@@ -1239,8 +1269,13 @@ export default function AdminDashboard({ session, onLogout, onBack }) {
                   <table className="ad-table">
                     <thead>
                       <tr>
-                        <th>Fecha</th><th>Manzana</th><th>Vialidad</th>
-                        <th>Servicios</th><th>Equip.</th><th>Total</th><th></th>
+                        <th className="th-sort" onClick={() => toggleSort('fecha')}>Fecha{sortIcon('fecha')}</th>
+                        <th className="th-sort" onClick={() => toggleSort('manzana')}>Manzana{sortIcon('manzana')}</th>
+                        <th>Vialidad</th>
+                        <th className="th-sort" onClick={() => toggleSort('servicios')}>Servicios{sortIcon('servicios')}</th>
+                        <th className="th-sort" onClick={() => toggleSort('equip')}>Equip.{sortIcon('equip')}</th>
+                        <th className="th-sort" onClick={() => toggleSort('total')}>Total{sortIcon('total')}</th>
+                        <th></th>
                       </tr>
                     </thead>
                     <tbody>

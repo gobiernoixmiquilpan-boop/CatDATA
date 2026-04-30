@@ -390,7 +390,7 @@ function makeRefIcon(type) {
 }
 
 /* ─── Mapa Infraestructura Card ─────────────────────────── */
-function MapaInfraestructura({ markers, onChange, blocked, refMarkers = [] }) {
+function MapaInfraestructura({ markers, onChange, blocked, blockReason, refMarkers = [] }) {
   const [activeType, setActiveType] = useState('luminaria')
   const [flyTarget, setFlyTarget]   = useState(null)
   const [locating, setLocating]     = useState(false)
@@ -466,7 +466,7 @@ function MapaInfraestructura({ markers, onChange, blocked, refMarkers = [] }) {
         <span className="mapa-card-icon"><IconLayers /></span>
         <div>
           <h2>Infraestructura en Mapa</h2>
-          <p>{blocked ? 'Completa el formulario para acceder al mapa' : 'Toca el mapa para agregar elementos. Selecciona el tipo con los botones.'}</p>
+          <p>{blocked ? (blockReason || 'Completa el formulario para acceder al mapa') : 'Toca el mapa para agregar elementos. Selecciona el tipo con los botones.'}</p>
           {!blocked && refMarkers.length > 0 && (
             <p className="mapa-ref-note">
               <span className="mapa-ref-dot" /> {refMarkers.length} punto{refMarkers.length !== 1 ? 's' : ''} ya registrado{refMarkers.length !== 1 ? 's' : ''} visibles como referencia
@@ -479,7 +479,7 @@ function MapaInfraestructura({ markers, onChange, blocked, refMarkers = [] }) {
       {blocked && (
         <div className="mapa-blocked-overlay">
           <IconLock />
-          <span>Completa las secciones anteriores para habilitar el mapa</span>
+          <span>{blockReason || 'Completa las secciones anteriores para habilitar el mapa'}</span>
         </div>
       )}
 
@@ -782,6 +782,17 @@ export default function FormCatastro({ onAdminClick, isAdmin = false }) {
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
+
+  // Warn before closing if form has unsaved data
+  useEffect(() => {
+    const hasData = manzana || nombreVialidad.trim() ||
+      Object.values(servicios).some(v => v !== '') ||
+      Object.values(equipamiento).some(v => v !== '')
+    if (!hasData) return
+    const handler = (e) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [manzana, nombreVialidad, servicios, equipamiento])
 
   async function syncOfflineQueue() {
     if (!isConfigured || !supabase) return
@@ -1277,6 +1288,10 @@ export default function FormCatastro({ onAdminClick, isAdmin = false }) {
           markers={infraMarkers}
           onChange={setInfraMarkers}
           blocked={!equipamientoCompleto}
+          blockReason={
+            !serviciosCompletos ? 'Completa los servicios e infraestructura primero' :
+            !equipamientoCompleto ? 'Completa el equipamiento urbano primero' : ''
+          }
           refMarkers={refMarkers}
         />
 
@@ -1330,12 +1345,14 @@ export default function FormCatastro({ onAdminClick, isAdmin = false }) {
               </div>
             </div>
 
-            {manzanaDup && !editingId && (
-              <div className="fc-dup-error">
-                <span>⚠ La manzana {manzana} ya está registrada ({manzanaDup.tipo_vialidad} {manzanaDup.nombre_vialidad}).</span>
-                <button type="button" className="dup-error-edit-btn" onClick={handleLoadForEdit} disabled={saving}>
-                  {saving ? 'Cargando…' : 'Editar ese registro'}
-                </button>
+            {(manzanaDup && !editingId) && (
+              <div className="submit-block-reason">
+                ⚠ Manzana duplicada — usa el botón <b>"Editar este registro"</b> en la sección 1
+              </div>
+            )}
+            {checkingManzana && (
+              <div className="submit-block-reason submit-block-checking">
+                Verificando disponibilidad de la manzana…
               </div>
             )}
             <button

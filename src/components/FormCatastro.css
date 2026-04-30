@@ -1548,27 +1548,21 @@ body {
 .manzana-edit-btn:hover { background: #fef3c7; }
 .manzana-edit-btn:disabled { opacity: .5; cursor: not-allowed; }
 
-/* ── Dup error edit button ───────────────────────────────── */
-.fc-dup-error {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* ── Submit block reason ─────────────────────────────────── */
+.submit-block-reason {
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1.5px solid #fca5a5;
+  border-radius: var(--r);
+  font-size: .82rem;
+  color: #b91c1c;
+  line-height: 1.4;
 }
-.dup-error-edit-btn {
-  align-self: flex-start;
-  padding: 8px 18px;
-  background: #fffbeb;
-  border: 1.5px solid #fcd34d;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: .85rem;
-  font-weight: 700;
-  color: #b45309;
-  cursor: pointer;
-  transition: background .15s;
+.submit-block-checking {
+  background: #f8fafc;
+  border-color: var(--border);
+  color: var(--ink-3);
 }
-.dup-error-edit-btn:hover { background: #fef3c7; }
-.dup-error-edit-btn:disabled { opacity: .5; cursor: not-allowed; }
 
 /* saved-summary y queue-modal → bottom sheet en móvil */
 @media (max-width: 600px) {
